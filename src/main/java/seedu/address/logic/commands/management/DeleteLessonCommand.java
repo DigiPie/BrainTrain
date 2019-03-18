@@ -1,11 +1,10 @@
 package seedu.address.logic.commands.management;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.core.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.commands.exceptions.CommandException.MESSAGE_EXPECTED_MGT_MODEL;
-import static seedu.address.logic.parser.Syntax.PREFIX_LESSON_CORE_HEADER;
-import static seedu.address.logic.parser.Syntax.PREFIX_LESSON_NAME;
-import static seedu.address.logic.parser.Syntax.PREFIX_LESSON_OPT_HEADER;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.CommandHistory;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
@@ -15,46 +14,41 @@ import seedu.address.model.modelmanager.Model;
 import seedu.address.model.modelmanager.management.ManagementModel;
 
 /**
- * This implements a {@link Command} which executes a command to add a {@link Lesson} to the
+ * This implements a {@link Command} which executes a command to delete a {@link Lesson} from the
  * {@code List<Lesson> lessons} loaded in memory. It requires a {@link ManagementModel}
- * to be passed into the {@link #execute(Model, CommandHistory)} command. The actual addition
+ * to be passed into the {@link #execute(Model, CommandHistory)} command. The actual deletion
  * of the {@link Lesson} is carried out in the {@link ManagementModel}.
  */
-public class AddLessonCommand implements Command {
+public class DeleteLessonCommand implements Command {
     /**
      * The word a user must enter to call this command.
      */
-    public static final String COMMAND_WORD = "addLesson";
+    public static final String COMMAND_WORD = "deleteLesson";
     /**
      * Instructions on command usage and parameters.
      */
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a lesson. "
-            + "Parameters: "
-            + PREFIX_LESSON_NAME + "NAME "
-            + PREFIX_LESSON_CORE_HEADER + "CORE..."
-            + "[" + PREFIX_LESSON_OPT_HEADER + "OPTIONAL]...\n"
-            + "Example: " + COMMAND_WORD + " "
-            + PREFIX_LESSON_NAME + "Capitals of the world "
-            + PREFIX_LESSON_CORE_HEADER + "Country "
-            + PREFIX_LESSON_CORE_HEADER + "Capital "
-            + PREFIX_LESSON_OPT_HEADER + "Hint";
+    public static final String MESSAGE_USAGE = COMMAND_WORD
+            + ": Deletes the lesson identified by its index number in the numbered list"
+            + " shown when the command \'listLessons\' is entered.\n"
+            + "Parameter: INDEX (must be a positive integer)\n"
+            + "Example: " + COMMAND_WORD + " 1";
     /**
      * Feedback message displayed to the user upon successful execution of this command
      */
-    public static final String MESSAGE_SUCCESS = "Added lesson: %1$s";
+    public static final String MESSAGE_SUCCESS = "Deleted lesson: ";
     /**
-     * The lesson to be added when {@link #execute(Model, CommandHistory)} is called.
+     * The index of the lesson to be deleted when {@link #execute(Model, CommandHistory)}
+     * is called.
      */
-    private final Lesson toAdd;
+    private final Index targetIndex;
 
     /**
-     * Creates an AddLessonCommand to add the specified {@link Lesson}
+     * Creates an DeleteLessonCommand to delete the specified {@link Lesson}
      *
-     * @param toAdd the {@link Lesson} to be added
+     * @param targetIndex the index of the {@link Lesson} to be deleted
      */
-    public AddLessonCommand(Lesson toAdd) {
-        requireNonNull(toAdd);
-        this.toAdd = toAdd;
+    public DeleteLessonCommand(Index targetIndex) {
+        this.targetIndex = targetIndex;
     }
 
     /**
@@ -76,15 +70,25 @@ public class AddLessonCommand implements Command {
         }
 
         ManagementModel mgtModel = (ManagementModel) model;
+        int toDeleteIndex = targetIndex.getZeroBased();
 
-        mgtModel.addLesson(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd));
+        String lessonName = "";
+
+        try {
+            lessonName = mgtModel.getLesson(toDeleteIndex).getName();
+            mgtModel.deleteLesson(toDeleteIndex);
+        } catch (IllegalArgumentException e) {
+            throw new CommandException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                    DeleteLessonCommand.MESSAGE_USAGE), e);
+        }
+
+        return new CommandResult(MESSAGE_SUCCESS + lessonName);
     }
 
     @Override
     public boolean equals(Object other) {
         return other == this // short circuit if same object
-                || (other instanceof AddLessonCommand // instanceof handles nulls
-                && toAdd.equals(((AddLessonCommand) other).toAdd));
+                || (other instanceof DeleteLessonCommand // instanceof handles nulls
+                && targetIndex.getZeroBased() == ((DeleteLessonCommand) other).targetIndex.getZeroBased());
     }
 }

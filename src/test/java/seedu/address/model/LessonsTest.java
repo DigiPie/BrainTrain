@@ -37,8 +37,8 @@ public class LessonsTest {
     }
 
     @Test
-    public void getLesson_indexOutOfBounds_throwsIndexOutOfBoundsException() {
-        thrown.expect(IndexOutOfBoundsException.class);
+    public void getLesson_indexOutOfBounds_throwsIllegalArgumentException() {
+        thrown.expect(IllegalArgumentException.class);
         lessons.getLesson(0);
         lessons.getLesson(-1);
         lessons.getLesson(999);
@@ -86,8 +86,8 @@ public class LessonsTest {
     }
 
     @Test
-    public void deleteLesson_invalidIndex_throwsIndexOutOfBoundsException() {
-        thrown.expect(IndexOutOfBoundsException.class);
+    public void deleteLesson_invalidIndex_throwsIllegalArgumentException() {
+        thrown.expect(IllegalArgumentException.class);
         lessons.deleteLesson(0);
         lessons.deleteLesson(-1);
         lessons.deleteLesson(1);
@@ -100,7 +100,7 @@ public class LessonsTest {
         assertEquals(getTestLesson(), lessons.getLesson(0));
         lessons.deleteLesson(0);
         assertEquals(0, lessons.getLessons().size());
-        thrown.expect(IndexOutOfBoundsException.class);
+        thrown.expect(IllegalArgumentException.class);
         lessons.getLesson(0);
     }
 

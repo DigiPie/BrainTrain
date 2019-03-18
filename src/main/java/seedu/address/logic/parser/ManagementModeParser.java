@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import seedu.address.commons.core.Messages;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.management.AddLessonCommand;
+import seedu.address.logic.commands.management.DeleteLessonCommand;
 import seedu.address.logic.commands.management.ExitCommand;
 import seedu.address.logic.commands.management.HelpCommand;
 import seedu.address.logic.commands.management.HistoryCommand;
@@ -57,6 +58,9 @@ public class ManagementModeParser implements Parser<Command> {
 
         case AddLessonCommand.COMMAND_WORD:
             return new AddLessonParser().parse(arguments);
+
+        case DeleteLessonCommand.COMMAND_WORD:
+            return new DeleteLessonParser().parse(arguments);
 
         case ListLessonsCommand.COMMAND_WORD:
             return new ListLessonsCommand();

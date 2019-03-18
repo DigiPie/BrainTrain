@@ -96,7 +96,7 @@ public class ManagementModelManager implements ManagementModel {
 
     @Override
     public Lesson getLesson(int index) {
-        Lesson lesson = lessons.getLessons().get(index);
+        Lesson lesson = lessons.getLesson(index);
         return lesson;
     }
 

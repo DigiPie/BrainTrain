@@ -2,42 +2,27 @@ package seedu.address.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.lesson.Lesson;
 import seedu.address.model.modelmanager.management.ManagementModelManager;
-import seedu.address.storage.CsvLessonsStorage;
-import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.Storage;
-import seedu.address.storage.StorageManager;
 
 public class ManagementModelManagerTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    private Storage storage;
-    private ManagementModelManager modelManager;
-
-    @Before
-    public void setUp() throws Exception {
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.newFile().toPath());
-        CsvLessonsStorage lessonsStorage = new CsvLessonsStorage(temporaryFolder.newFolder().toPath());
-        storage = new StorageManager(userPrefsStorage, lessonsStorage);
-        modelManager = new ManagementModelManager(storage);
-    }
+    private ManagementModelManager modelManager = new ManagementModelManager();
 
     private void addTestLesson() {
         modelManager.addLesson(getTestLesson());
@@ -54,9 +39,7 @@ public class ManagementModelManagerTest {
 
     @Test
     public void constructor() {
-        UserPrefs expectedUserPrefs = new UserPrefs();
-        expectedUserPrefs.setLessonsFolderPath(Paths.get(""));
-        assertEquals(expectedUserPrefs, modelManager.getUserPrefs());
+        assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());
         assertEquals(new Lessons().getLessons(), modelManager.getLessons());
     }
@@ -88,41 +71,87 @@ public class ManagementModelManagerTest {
         assertEquals(guiSettings, modelManager.getGuiSettings());
     }
 
+    @Test
+    public void getLessons_lessonsNotNull_getsLessonsList() {
+        assertNotNull(modelManager.getLessons());
+    }
 
     @Test
-    public void lessonsReadSaveEdit() throws Exception {
-        /*
-         * Note: This is an integration test that verifies the ManagementModelManager is properly wired to the
-         * {@link Lessons} class and {@link StorageManager}.
-         * More extensive testing of Lessons editing is done in {@link Lessons} class, and Lessons saving/editing
-         * in the {@link StorageManager} class.
-         */
-        Lessons expectedLessons = modelManager.readLessons().get();
-        modelManager.saveLessons();
-        Lessons actualLessons = modelManager.readLessons().get();
-        assertEquals(expectedLessons, actualLessons);
-        modelManager.addLesson(getTestLesson());
-        modelManager.saveLessons();
-        actualLessons = modelManager.readLessons().get();
-        assertEquals(getTestLesson(), actualLessons.getLesson(0));
-        assertEquals(getTestLesson(), modelManager.getLesson(0));
-        Lesson lesson = getTestLesson();
-        lesson.setName("Test2");
+    public void getLesson_indexOutOfBounds_throwsIllegalArgumentException() {
+        thrown.expect(IllegalArgumentException.class);
+        modelManager.getLesson(0);
+        modelManager.getLesson(-1);
+        modelManager.getLesson(999);
+    }
 
-        modelManager.setLesson(0, lesson);
-        assertEquals(lesson, modelManager.getLesson(0));
+    @Test
+    public void getLesson_validLesson_getsLesson() {
+        addTestLesson();
+        Assert.assertEquals(getTestLesson(), modelManager.getLesson(0));
+    }
 
+    @Test
+    public void addLesson_validLesson_addsLesson() {
+        addTestLesson();
+        assertEquals(1, modelManager.getLessons().size());
+    }
+
+    @Test
+    public void addLesson_nullLesson_throwsNullPointerException() {
+        thrown.expect(NullPointerException.class);
+        modelManager.addLesson(null);
+    }
+
+    @Test
+    public void setLesson_nullLesson_throwsNullPointerException() {
+        addTestLesson();
+        thrown.expect(NullPointerException.class);
+        modelManager.setLesson(0, null);
+    }
+
+    @Test
+    public void setLesson_invalidIndex_throwsIndexOutOfBoundsException() {
+        thrown.expect(IndexOutOfBoundsException.class);
+        modelManager.setLesson(0, getTestLesson());
+    }
+
+    @Test
+    public void setLesson_validData_updatesLesson() {
+        addTestLesson();
+        Lesson newLesson = getTestLesson();
+        newLesson.addCard(Arrays.asList("test1", "test2"));
+        assertNotEquals(newLesson, getTestLesson());
+        modelManager.setLesson(0, newLesson);
+        Assert.assertEquals(newLesson, modelManager.getLesson(0));
+    }
+
+    @Test
+    public void deleteLesson_invalidIndex_throwsIllegalArgumentException() {
+        thrown.expect(IllegalArgumentException.class);
+        modelManager.deleteLesson(0);
+        modelManager.deleteLesson(-1);
+        modelManager.deleteLesson(1);
+    }
+
+    @Test
+    public void deleteLesson_validIndex_deletesLesson() {
+        addTestLesson();
+        assertEquals(1, modelManager.getLessons().size());
+        Assert.assertEquals(getTestLesson(), modelManager.getLesson(0));
         modelManager.deleteLesson(0);
         assertEquals(0, modelManager.getLessons().size());
+        thrown.expect(IllegalArgumentException.class);
+        modelManager.getLesson(0);
     }
+
     @Test
     public void equals() {
         UserPrefs userPrefs = new UserPrefs();
         Lessons lessons = new Lessons();
 
         // same values -> returns true
-        modelManager = new ManagementModelManager(userPrefs, storage);
-        ManagementModelManager modelManagerCopy = new ManagementModelManager(userPrefs, storage);
+        modelManager = new ManagementModelManager(userPrefs, lessons);
+        ManagementModelManager modelManagerCopy = new ManagementModelManager(userPrefs, lessons);
         assertTrue(modelManager.equals(modelManagerCopy));
 
         // same object -> returns true

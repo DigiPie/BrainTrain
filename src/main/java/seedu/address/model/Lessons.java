@@ -11,6 +11,9 @@ import seedu.address.model.lesson.Lesson;
  * Wraps all lesson data in memory.
  */
 public class Lessons {
+    //Static fields
+    public static final String EXCEPTION_INVALID_INDEX = "Invalid index: ";
+
     private List<Lesson> lessons;
 
     public Lessons () {
@@ -22,7 +25,11 @@ public class Lessons {
     }
 
     public Lesson getLesson(int index) {
-        return lessons.get(index);
+        try {
+            return lessons.get(index);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(EXCEPTION_INVALID_INDEX + index);
+        }
     }
 
     /**
@@ -30,7 +37,11 @@ public class Lessons {
      * @param index
      */
     public void deleteLesson(int index) {
-        lessons.remove(index);
+        try {
+            lessons.remove(index);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(EXCEPTION_INVALID_INDEX + index);
+        }
     }
 
     /**

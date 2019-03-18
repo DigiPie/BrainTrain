@@ -4,9 +4,9 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static seedu.address.logic.commands.exceptions.CommandException.MESSAGE_EXPECTED_MGT_MODEL;
+import static seedu.address.model.Lessons.EXCEPTION_INVALID_INDEX;
+import static seedu.address.testutil.TypicalLessons.LESSON_DEFAULT;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Rule;
@@ -14,19 +14,20 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.CommandHistory;
 import seedu.address.logic.commands.exceptions.CommandException;
-import seedu.address.logic.commands.management.AddLessonCommand;
+import seedu.address.logic.commands.management.DeleteLessonCommand;
+import seedu.address.model.Lessons;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.lesson.Lesson;
 import seedu.address.model.modelmanager.management.ManagementModel;
 import seedu.address.model.modelmanager.quiz.Quiz;
 import seedu.address.model.modelmanager.quiz.QuizCard;
 import seedu.address.model.modelmanager.quiz.QuizModel;
-import seedu.address.testutil.LessonBuilder;
 import seedu.address.testutil.TypicalLessons;
 
-public class AddLessonCommandTest {
+public class DeleteLessonCommandTest {
 
     private static final CommandHistory EMPTY_COMMAND_HISTORY = new CommandHistory();
 
@@ -35,31 +36,37 @@ public class AddLessonCommandTest {
 
     private CommandHistory commandHistory = new CommandHistory();
 
+    /**
+     * Attempts to delete a non-existent lesson
+     */
     @Test
-    public void constructor_nullLesson_throwsNullPointerException() {
-        thrown.expect(NullPointerException.class);
-        new AddLessonCommand(null);
+    public void execute_lessonDeletedByModel_deleteUnsuccessful() throws Exception {
+        MgtModelStubAcceptingAddDelete modelStub = new MgtModelStubAcceptingAddDelete();
+        Index toDeleteIndex = Index.fromZeroBased(0);
+        thrown.expect(CommandException.class);
+        CommandResult commandResult =
+                new DeleteLessonCommand(toDeleteIndex).execute(modelStub, commandHistory);
     }
 
     @Test
-    public void execute_lessonAcceptedByModel_addSuccessful() throws Exception {
-        ManagementModelStubAcceptingLesson modelStub = new ManagementModelStubAcceptingLesson();
-        Lesson validLesson = new LessonBuilder().build();
+    public void execute_lessonDeletedByModel_deleteSuccessful() throws Exception {
+        MgtModelStubAcceptingAddDelete modelStub = new MgtModelStubAcceptingAddDelete();
+        modelStub.addLesson(LESSON_DEFAULT);
 
+        Index toDeleteIndex = Index.fromZeroBased(0);
         CommandResult commandResult =
-                new AddLessonCommand(validLesson).execute(modelStub, commandHistory);
+                new DeleteLessonCommand(toDeleteIndex).execute(modelStub, commandHistory);
 
-        assertEquals(String.format(AddLessonCommand.MESSAGE_SUCCESS, validLesson),
-                commandResult.getFeedbackToUser());
-        assertEquals(Arrays.asList(validLesson), modelStub.lessonsAdded);
+        assertEquals(String.format(DeleteLessonCommand.MESSAGE_SUCCESS + LESSON_DEFAULT.getName(),
+                toDeleteIndex.getZeroBased()), commandResult.getFeedbackToUser());
         assertEquals(EMPTY_COMMAND_HISTORY, commandHistory);
     }
 
     @Test
     public void execute_incorrectModel_throwsCommandException() throws Exception {
         QuizModelStub modelStub = new QuizModelStub();
-        Lesson validLesson = new LessonBuilder().build();
-        AddLessonCommand addLessonCommand = new AddLessonCommand(validLesson);
+        Index toDeleteIndex = Index.fromZeroBased(0);
+        DeleteLessonCommand addLessonCommand = new DeleteLessonCommand(toDeleteIndex);
 
         thrown.expect(CommandException.class);
         thrown.expectMessage(MESSAGE_EXPECTED_MGT_MODEL);
@@ -68,26 +75,26 @@ public class AddLessonCommandTest {
 
     @Test
     public void equals() {
-        Lesson lessonDefault = new LessonBuilder(TypicalLessons.LESSON_DEFAULT).build();
-        Lesson lessonTrueFalse = new LessonBuilder(TypicalLessons.LESSON_TRUE_FALSE).build();
-        AddLessonCommand addLessonDefCommand = new AddLessonCommand(lessonDefault);
-        AddLessonCommand addLessonPropCommand = new AddLessonCommand(lessonTrueFalse);
+        Index toDeleteIndex1 = Index.fromZeroBased(0);
+        Index toDeleteIndex2 = Index.fromZeroBased(1);
+        DeleteLessonCommand deleteLessonCommand1 = new DeleteLessonCommand(toDeleteIndex1);
+        DeleteLessonCommand deleteLessonCommand2 = new DeleteLessonCommand(toDeleteIndex2);
 
         // same object -> returns true
-        assertEquals(addLessonDefCommand, addLessonDefCommand);
+        assertEquals(deleteLessonCommand1, deleteLessonCommand1);
 
         // same values -> returns true
-        AddLessonCommand addLessonDefCommandCopy = new AddLessonCommand(lessonDefault);
-        assertEquals(addLessonDefCommand, addLessonDefCommandCopy);
+        DeleteLessonCommand deleteLessonCommandCopy = new DeleteLessonCommand(toDeleteIndex1);
+        assertEquals(deleteLessonCommand1, deleteLessonCommandCopy);
 
         // different types -> returns false
-        assertNotEquals(addLessonDefCommand, 1);
+        assertNotEquals(deleteLessonCommand1, 1);
 
         // null -> returns false
-        assertNotEquals(addLessonDefCommand, null);
+        assertNotEquals(deleteLessonCommand1, null);
 
         // different lesson -> returns false
-        assertNotEquals(addLessonDefCommand, addLessonPropCommand);
+        assertNotEquals(deleteLessonCommand1, deleteLessonCommand2);
     }
 
     /**
@@ -159,13 +166,37 @@ public class AddLessonCommandTest {
     /**
      * A Model stub that always accept the lesson being added.
      */
-    private class ManagementModelStubAcceptingLesson extends ManagementModelStub {
-        public final ArrayList<Lesson> lessonsAdded = new ArrayList<>();
+    private class MgtModelStubAcceptingAddDelete extends ManagementModelStub {
+        private final Lessons lessons = new Lessons();
 
         @Override
         public void addLesson(Lesson lesson) {
             requireNonNull(lesson);
-            lessonsAdded.add(lesson);
+            lessons.addLesson(lesson);
+        }
+
+        /**
+         * Gets the entire list of lessons.
+         */
+        public Lesson getLesson(int index) {
+            try {
+                return lessons.getLesson(index);
+            } catch (IndexOutOfBoundsException e) {
+                throw new IllegalArgumentException(EXCEPTION_INVALID_INDEX + index);
+            }
+        }
+
+        /**
+         * Gets the entire list of lessons.
+         */
+        @Override
+        public List<Lesson> getLessons() {
+            return lessons.getLessons();
+        }
+
+        @Override
+        public void deleteLesson(int index) {
+            lessons.deleteLesson(index);
         }
     }
 
