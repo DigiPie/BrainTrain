@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import seedu.address.logic.CommandHistory;
 import seedu.address.logic.commands.quiz.QuizStartCommand;
@@ -16,14 +19,29 @@ import seedu.address.model.modelmanager.quiz.Quiz;
 import seedu.address.model.modelmanager.quiz.QuizCard;
 import seedu.address.model.modelmanager.quiz.QuizModel;
 import seedu.address.model.modelmanager.quiz.QuizModelManager;
+import seedu.address.storage.CsvLessonsStorage;
+import seedu.address.storage.JsonUserPrefsStorage;
+import seedu.address.storage.Storage;
+import seedu.address.storage.StorageManager;
 
 public class QuizStartCommandTest {
-
     private static final CommandHistory commandHistory = new CommandHistory();
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private Storage storage;
+
+    @Before
+    public void setUp() throws Exception {
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.newFile().toPath());
+        CsvLessonsStorage lessonsStorage = new CsvLessonsStorage(temporaryFolder.newFolder().toPath());
+        storage = new StorageManager(userPrefsStorage, lessonsStorage);
+    }
 
     @Test
     public void execute_success() throws Exception {
-        ManagementModel managementModel = new ManagementModelManager();
+        ManagementModel managementModel = new ManagementModelManager(storage);
         CommandResult commandResult = new QuizStartCommand().execute(managementModel, commandHistory);
 
         assertEquals(String.format(QuizStartCommand.MESSAGE_SUCCESS), commandResult.getFeedbackToUser());

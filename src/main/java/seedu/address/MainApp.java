@@ -16,17 +16,14 @@ import seedu.address.commons.util.ConfigUtil;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.LogicManager;
-import seedu.address.model.Lessons;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.modelmanager.management.ManagementModel;
 import seedu.address.model.modelmanager.management.ManagementModelManager;
 import seedu.address.model.modelmanager.quiz.QuizModel;
 import seedu.address.model.modelmanager.quiz.QuizModelManager;
-import seedu.address.storage.CsvLessonImportExport;
 import seedu.address.storage.CsvLessonsStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.LessonImportExport;
 import seedu.address.storage.LessonsStorage;
 import seedu.address.storage.Storage;
 import seedu.address.storage.StorageManager;
@@ -61,13 +58,11 @@ public class MainApp extends Application {
         UserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(config.getUserPrefsFilePath());
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
         LessonsStorage lessonsStorage = new CsvLessonsStorage(userPrefs.getLessonsFolderPath());
-        Lessons lessons = initLessons(lessonsStorage);
-        LessonImportExport lessonImportExport = new CsvLessonImportExport(userPrefs.getLessonImportExportFilePath());
-        storage = new StorageManager(userPrefsStorage, lessonsStorage, lessonImportExport);
+        storage = new StorageManager(userPrefsStorage, lessonsStorage);
 
         initLogging(config);
 
-        managementModel = initModelManager(userPrefs, lessons);
+        managementModel = initModelManager(userPrefs, storage);
         quizModel = initQuizModelManager();
 
         logic = new LogicManager(managementModel, quizModel);
@@ -78,8 +73,8 @@ public class MainApp extends Application {
     /**
      * Returns a {@code ManagementModelManager} with the data from {@code userPrefs}.
      */
-    private ManagementModel initModelManager(ReadOnlyUserPrefs userPrefs, Lessons lessons) {
-        return new ManagementModelManager(userPrefs, lessons);
+    private ManagementModel initModelManager(ReadOnlyUserPrefs userPrefs, Storage storage) {
+        return new ManagementModelManager(userPrefs, storage);
     }
 
     /**
@@ -159,37 +154,6 @@ public class MainApp extends Application {
         }
 
         return initializedPrefs;
-    }
-
-
-    /**
-     * Returns a {@code UserPrefs} using the file at {@code storage}'s user prefs file path,
-     * or a new {@code UserPrefs} with default configuration if errors occur when
-     * reading from the file.
-     */
-    protected Lessons initLessons(LessonsStorage storage) {
-        Path lessonsFolderPath = storage.getLessonsFolderPath();
-        logger.info("Using lessons folder : " + lessonsFolderPath);
-
-        Lessons initializedLessons = null;
-        try {
-            Optional<Lessons> prefsOptional = storage.readLessons();
-            initializedLessons = prefsOptional.orElse(new Lessons());
-        } catch (IOException e) {
-            logger.warning("Problem while reading from the file. Will be starting with a empty BrainTrain");
-            initializedLessons = new Lessons();
-        }
-        /*
-        //Update prefs file in case it was missing to begin with or there are new/unused fields
-        try {
-            storage.saveUserPrefs(initializedPrefs);
-        } catch (IOException e) {
-            logger.warning("Failed to save config file : " + StringUtil.getDetails(e));
-        }
-        */
-
-        logger.info(initializedLessons.getLessons().size() + " lessons loaded.");
-        return initializedLessons;
     }
 
     @Override

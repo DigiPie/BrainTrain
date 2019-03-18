@@ -7,7 +7,6 @@ import javafx.stage.Stage;
 
 import seedu.address.commons.core.Config;
 import seedu.address.commons.core.GuiSettings;
-import seedu.address.model.Lessons;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.modelmanager.management.ManagementModel;
 import seedu.address.model.modelmanager.management.ManagementModelManager;
@@ -49,7 +48,7 @@ public class TestApp extends MainApp {
      * Returns a defensive copy of the management.
      */
     public ManagementModel getModel() {
-        ManagementModel copy = new ManagementModelManager(new UserPrefs(), new Lessons());
+        ManagementModel copy = new ManagementModelManager(new UserPrefs(), storage);
         return copy;
     }
 

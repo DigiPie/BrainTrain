@@ -8,7 +8,6 @@ import seedu.address.commons.exceptions.DataConversionException;
 import seedu.address.model.Lessons;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
-import seedu.address.model.lesson.Lesson;
 
 /**
  * Manages storage of AddressBook data in local storage.
@@ -17,16 +16,13 @@ public class StorageManager implements Storage {
 
     private UserPrefsStorage userPrefsStorage;
     private LessonsStorage lessonsStorage;
-    private LessonImportExport lessonImportExport;
 
 
     public StorageManager(UserPrefsStorage userPrefsStorage,
-                          LessonsStorage lessonsStorage,
-                          LessonImportExport lessonImportExport) {
+                          LessonsStorage lessonsStorage) {
         super();
         this.userPrefsStorage = userPrefsStorage;
         this.lessonsStorage = lessonsStorage;
-        this.lessonImportExport = lessonImportExport;
     }
 
     // ================ UserPrefs methods ==============================
@@ -59,30 +55,26 @@ public class StorageManager implements Storage {
     }
 
     @Override
-    public Optional<Lessons> readLessons() throws IOException {
+    public Optional<Lessons> readLessons() {
         return lessonsStorage.readLessons();
     }
 
     @Override
-    public Optional<Lessons> readLessons(Path filePath) throws IOException {
+    public Optional<Lessons> readLessons(Path filePath) {
         return lessonsStorage.readLessons(filePath);
     }
 
     @Override
-    public int saveLessons(Lessons lessons) throws IOException {
+    public int saveLessons(Lessons lessons) {
         return lessonsStorage.saveLessons(lessons);
     }
 
     @Override
-    public int saveLessons(Lessons lessons, Path filePath) throws IOException {
+    public int saveLessons(Lessons lessons, Path filePath) {
         return lessonsStorage.saveLessons(lessons, filePath);
     }
 
-    @Override
-    public Path getImportExportFilePath() {
-        return lessonImportExport.getImportExportFilePath();
-    }
-
+    /*
     @Override
     public Optional<Lesson> importLesson(Path filePath) throws IOException {
         return Optional.empty();
@@ -92,6 +84,6 @@ public class StorageManager implements Storage {
     public void exportLesson(Lesson lesson, Path filePath) throws IOException {
 
     }
-
+    */
 
 }

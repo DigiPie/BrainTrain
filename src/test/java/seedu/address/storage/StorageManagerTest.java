@@ -28,8 +28,7 @@ public class StorageManagerTest {
     public void setUp() {
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(getTempFilePath("prefs"));
         CsvLessonsStorage lessonsStorage = new CsvLessonsStorage(getTempFilePath("data"));
-        CsvLessonImportExport lessonImportExport = new CsvLessonImportExport(getTempFilePath("import_export"));
-        storageManager = new StorageManager(userPrefsStorage, lessonsStorage, lessonImportExport);
+        storageManager = new StorageManager(userPrefsStorage, lessonsStorage);
     }
 
     private Path getTempFilePath(String fileName) {

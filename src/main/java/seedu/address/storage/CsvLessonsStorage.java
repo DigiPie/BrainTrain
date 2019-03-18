@@ -201,6 +201,7 @@ public class CsvLessonsStorage implements LessonsStorage {
     @Override
     public Optional<Lessons> readLessons(Path folderPath) {
         requireNonNull(folderPath);
+        logger.info("Using lessons folder : " + folderPath);
         List<Path> paths = new ArrayList<>();
         Lessons lessons = new Lessons();
         try {
@@ -213,6 +214,8 @@ public class CsvLessonsStorage implements LessonsStorage {
             Optional<Lesson> newLesson = parseFileIntoLesson(filePath);
             newLesson.ifPresent(lessons::addLesson);
         }
+
+        logger.info(lessons.getLessons().size() + " lessons loaded.");
         return Optional.of(lessons);
     }
 
@@ -236,6 +239,7 @@ public class CsvLessonsStorage implements LessonsStorage {
                 saveCount++;
             } catch (IOException e) {
                 logger.warning(lesson.getName() + " failed to save; IOException occurred");
+                System.out.println(e.getMessage());
             }
         }
         return saveCount;

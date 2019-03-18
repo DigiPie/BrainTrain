@@ -3,7 +3,9 @@ package seedu.address.model.modelmanager.management;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import seedu.address.commons.core.GuiSettings;
@@ -12,6 +14,7 @@ import seedu.address.model.Lessons;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.lesson.Lesson;
+import seedu.address.storage.Storage;
 
 /**
  * Represents the in-memory management of BrainTrain data.
@@ -19,23 +22,26 @@ import seedu.address.model.lesson.Lesson;
 public class ManagementModelManager implements ManagementModel {
     private static final Logger logger = LogsCenter.getLogger(ManagementModelManager.class);
 
+    private final Storage storage;
     private final Lessons lessons;
     private final UserPrefs userPrefs;
     /**
      * Initializes a ManagementModelManager with the given userPrefs.
      */
-    public ManagementModelManager(ReadOnlyUserPrefs userPrefs, Lessons lessons) {
+    public ManagementModelManager(ReadOnlyUserPrefs userPrefs, Storage storage) {
         super();
         requireAllNonNull(userPrefs);
 
         logger.fine("Initializing with user prefs " + userPrefs);
 
         this.userPrefs = new UserPrefs(userPrefs);
-        this.lessons = lessons;
+        this.storage = storage;
+        this.lessons = readLessons().orElse(new Lessons());
     }
 
-    public ManagementModelManager() {
-        this(new UserPrefs(), new Lessons());
+    public ManagementModelManager(Storage storage) {
+        this(new UserPrefs(), storage);
+        this.userPrefs.setLessonsFolderPath(Paths.get(""));
     }
 
     //=========== UserPrefs ==================================================================================
@@ -64,6 +70,25 @@ public class ManagementModelManager implements ManagementModel {
 
     //=========== Lessons ==================================================================================
 
+    /**
+     * Reads in lessons from file through StorageManager.
+     *
+     * @return
+     */
+    public Optional<Lessons> readLessons() {
+        return storage.readLessons();
+    }
+
+    /**
+     * TODO
+     * @return
+     */
+    public int saveLessons() {
+        requireAllNonNull(storage, lessons);
+        return storage.saveLessons(lessons);
+    }
+
+
     @Override
     public List<Lesson> getLessons() {
         return lessons.getLessons();
@@ -90,32 +115,6 @@ public class ManagementModelManager implements ManagementModel {
         lessons.deleteLesson(index);
     }
 
-    //=========== Undo/Redo =================================================================================
-
-    //    @Override
-    //    public boolean canUndoAddressBook() {
-    //        return versionedAddressBook.canUndo();
-    //    }
-    //
-    //    @Override
-    //    public boolean canRedoAddressBook() {
-    //        return versionedAddressBook.canRedo();
-    //    }
-    //
-    //    @Override
-    //    public void undoAddressBook() {
-    //        versionedAddressBook.undo();
-    //    }
-    //
-    //    @Override
-    //    public void redoAddressBook() {
-    //        versionedAddressBook.redo();
-    //    }
-    //
-    //    @Override
-    //    public void commitAddressBook() {
-    //        versionedAddressBook.commit();
-    //    }
 
     @Override
     public boolean equals(Object obj) {
@@ -131,7 +130,9 @@ public class ManagementModelManager implements ManagementModel {
 
         // state check
         ManagementModelManager other = (ManagementModelManager) obj;
-        return userPrefs.equals(other.userPrefs) && lessons.equals(other.lessons);
+        return userPrefs.equals(other.userPrefs)
+                && lessons.equals(other.lessons)
+                && storage.equals(other.storage);
     }
 
 }

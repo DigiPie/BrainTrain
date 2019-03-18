@@ -25,23 +25,22 @@ public interface LessonsStorage {
      *   Returns {@code Optional.empty()} if storage file is not found.
      * @throws IOException if there was any problem when reading from the storage.
      */
-    Optional<Lessons> readLessons() throws IOException;
+    Optional<Lessons> readLessons();
 
     /**
      * @see #getLessonsFolderPath()
      */
-    Optional<Lessons> readLessons(Path folderPath) throws IOException;
+    Optional<Lessons> readLessons(Path folderPath);
 
     /**
      * Saves the given {@link Lessons} to the storage.
      * @param lessons cannot be null.
      * @return Number of lessons successfully saved.
-     * @throws IOException if there was any problem writing to the file.
      */
-    int saveLessons(Lessons lessons) throws IOException;
+    int saveLessons(Lessons lessons);
 
     /**
      * @see #saveLessons(Lessons)
      */
-    int saveLessons(Lessons lessons, Path filePath) throws IOException;
+    int saveLessons(Lessons lessons, Path filePath);
 }

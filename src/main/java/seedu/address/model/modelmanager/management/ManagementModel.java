@@ -49,12 +49,14 @@ public interface ManagementModel extends Model {
 
     /**
      * Updates the lesson at the given index.
+     * @param index Index of lesson to be overwritten.
+     * @param updatedLesson New lesson that will overwrite the original.
      */
     void setLesson(int index, Lesson updatedLesson);
 
     /**
      * Removes the lesson at the given index from memory, and deletes its corresponding file.
-     * @param index w
+     * @param index
      */
     void deleteLesson(int index);
 }

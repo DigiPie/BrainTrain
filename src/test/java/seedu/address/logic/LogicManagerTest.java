@@ -19,17 +19,15 @@ import seedu.address.logic.commands.management.HistoryCommand;
 import seedu.address.logic.commands.quiz.QuizAnswerCommand;
 import seedu.address.logic.commands.quiz.QuizStartCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.Lessons;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.modelmanager.management.ManagementModel;
 import seedu.address.model.modelmanager.management.ManagementModelManager;
 import seedu.address.model.modelmanager.quiz.Quiz;
 import seedu.address.model.modelmanager.quiz.QuizCard;
 import seedu.address.model.modelmanager.quiz.QuizModel;
 import seedu.address.model.modelmanager.quiz.QuizModelManager;
-import seedu.address.storage.CsvLessonImportExport;
 import seedu.address.storage.CsvLessonsStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
+import seedu.address.storage.Storage;
 import seedu.address.storage.StorageManager;
 
 public class LogicManagerTest {
@@ -39,16 +37,17 @@ public class LogicManagerTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private ManagementModel managementModel = new ManagementModelManager();
+    private Storage storage;
+    private ManagementModel managementModel;
     private QuizModel quizModel = new QuizModelManager();
     private Logic logic;
 
     @Before
     public void setUp() throws Exception {
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.newFile().toPath());
-        CsvLessonsStorage lessonsStorage = new CsvLessonsStorage(temporaryFolder.newFile().toPath());
-        CsvLessonImportExport lessonImportExport = new CsvLessonImportExport(temporaryFolder.newFile().toPath());
-        StorageManager storage = new StorageManager(userPrefsStorage, lessonsStorage, lessonImportExport);
+        CsvLessonsStorage lessonsStorage = new CsvLessonsStorage(temporaryFolder.newFolder().toPath());
+        storage = new StorageManager(userPrefsStorage, lessonsStorage);
+        managementModel = new ManagementModelManager(storage);
         logic = new LogicManager(managementModel, quizModel);
     }
 
@@ -153,7 +152,7 @@ public class LogicManagerTest {
      * @see #assertCommandBehavior(Class, String, String, ManagementModel)
      */
     private void assertCommandFailure(String inputCommand, Class<?> expectedException, String expectedMessage) {
-        ManagementModel expectedManagementModel = new ManagementModelManager(new UserPrefs(), new Lessons());
+        ManagementModel expectedManagementModel = new ManagementModelManager(storage);
         assertCommandBehavior(expectedException, inputCommand, expectedMessage, expectedManagementModel);
     }
 
